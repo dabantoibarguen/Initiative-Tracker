@@ -14,6 +14,8 @@ import javafx.application.Platform;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.*;
 
 
 public class Initracker extends Application {
@@ -31,14 +33,14 @@ public class Initracker extends Application {
         newItemField.setPrefSize(150, 25);
 
         // Create and position the "fruit" ListView with some fruits in it
-        ListView<String> fruitList = new ListView<String>();
+        ListView<String> initList = new ListView<String>();
 
-        ObservableList<String> fruits = 
-              FXCollections.observableArrayList("Apples", "Oranges", "Bananas", "Cherries");
-        fruitList.setItems(fruits);
+        ObservableList<String> order = 
+              FXCollections.observableArrayList();
+        initList.setItems(order);
 
-        fruitList.relocate(10, 45);
-        fruitList.setPrefSize(150, 150);
+        initList.relocate(10, 45);
+        initList.setPrefSize(150, 150);
 
         // Create and position the "Add" Button
         Button addButton = new Button("Add");
@@ -47,37 +49,34 @@ public class Initracker extends Application {
 
         // Handler needed
         addButton.setOnAction(evt -> {
-            if (!newItemField.getText().isEmpty() && !fruits.contains(newItemField.getText())) {
-                fruits.add(newItemField.getText());  
+            if (!newItemField.getText().isEmpty() && !order.contains(newItemField.getText())) {
+                order.add(newItemField.getText());  
                 newItemField.setText(null);
             }
         });
 
         newItemField.setOnKeyPressed(e -> {
             if (e.getCode() == KeyCode.ENTER){
-            if(newItemField.getText() != null && !fruits.contains(newItemField.getText())) {
-                fruits.add(newItemField.getText());  
+            if(newItemField.getText() != null && !order.contains(newItemField.getText())) {
+                order.add(newItemField.getText());  
                 newItemField.setText(null);
             }}
         });
 
+        /*
         // Create and position the "Remove" Button
         Button removeButton = new Button("Remove");
         removeButton.relocate(175, 45);
         removeButton.setPrefSize(100, 25);
 
         removeButton.setOnAction(evt -> {
-            if (newItemField.getText() != null && fruits.contains(newItemField.getText())) {
-                fruits.remove(newItemField.getText());  
+            if (newItemField.getText() != null && order.contains(newItemField.getText())) {
+                order.remove(newItemField.getText());  
                 newItemField.setText(null);
             }
-        });
-
-        // TO COMPLETE for Monday
-        // Handler needed
-
+        }); */
         // Add all the components to the window
-        aPane.getChildren().addAll(newItemField, addButton, removeButton, fruitList);
+        aPane.getChildren().addAll(newItemField, addButton, initList);
 
 
         Scene scene = new Scene(aPane, MIN_WIDTH, MIN_HEIGHT); // Set size of window as a scene
@@ -96,5 +95,33 @@ public class Initracker extends Application {
 
     public static void main(String[] args){
         launch();
+    }
+
+    public static class Creature {
+        private final int initiative;
+        private final String creatureName;
+        private int hitpoints;
+     
+        private Creature(int init, String name, int hp) {
+            this.initiative = init;
+            this.creatureName = name;
+            this.hitpoints = hp;
+        }
+     
+        public String name() {
+            return creatureName;
+        }
+            
+        public int getInitiative() {
+            return initiative;
+        }
+
+        public int getHp() {
+            return hitpoints;
+        }
+
+        public void setHp(int hp) {
+            hitpoints = hp;
+        }
     }
 }
