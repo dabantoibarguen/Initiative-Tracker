@@ -1,5 +1,6 @@
 import java.security.Guard;
 
+import javax.swing.ButtonModel;
 import javax.swing.SortOrder;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.TabableView;
@@ -30,40 +31,108 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
 import javafx.scene.control.CheckBox;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.*;
 
 
 public class Initracker extends Application {
 
-    public static final int MIN_WIDTH = 450;
-    public static final int MIN_HEIGHT = 250;
+    public static final int MIN_WIDTH = 600;
+    public static final int MIN_HEIGHT = 300;
 
     // Table view to see the housemates and room numbers
     private final TableView<Creature> initList = new TableView<>();
     private final ObservableList<Creature> order = 
         FXCollections.observableArrayList();
-    final HBox hb = new HBox();
 
     CheckBox randomizeInit = new CheckBox("Random Initiative");
 
     public void assignCreature(TextField n, TextField in, TextField h){
         String nm = "?";
         String it = "0";
-        String hitP = "0";
+        String hitP = "1";
         if(!n.getText().isEmpty()){
             nm = n.getText();
         }
         if(!in.getText().isEmpty()){
             it = in.getText();
         }
+        if(randomizeInit.isSelected()){
+            int inN = ThreadLocalRandom.current().nextInt(1, 20);
+            Character sign = in.getText().charAt(0);
+            it = Integer.toString(inN);
+            if(!in.getText().isEmpty()){
+                int start = 1;
+                if(sign == '+' || sign == '-'){
+                    start = 0;
+                }
+                inN += Integer.parseInt(in.getText().substring(start));
+                it = Integer.toString(inN);
+                //it += sign + " (" + it + ")";
+            }
+        }
         if(!h.getText().isEmpty()){
             hitP = h.getText();
+            Pattern dice = Pattern.compile("([0-9]*)([dD]?)([0-9]*)([+]?)([0-9]*$)");
+            Matcher match = dice.matcher(hitP);
+            if(!match.find()){
+                return;
+            }
+            if(match.group(2) != ""){
+                int result = 0;
+                int gOne = 1;
+                int gThree = 1;
+                if(match.group(1) != ""){
+                    gOne = Integer.parseInt(match.group(1));
+                }
+                if(match.group(3) != ""){
+                    gThree = Integer.parseInt(match.group(3));
+                }
+                int rollGThree = 0;
+                for(int r = 0; r<gOne; r++){
+                    if(gThree != 1){
+                        rollGThree += ThreadLocalRandom.current().nextInt(1, gThree+1);
+                    }
+                    else{
+                        rollGThree += 1;
+                    }
+                }
+                result = rollGThree;
+                if(match.group(4) != "" && match.group(5) != ""){
+                    result += Integer.parseInt(match.group(5));
+                }
+                hitP = Integer.toString(result); 
+            }
+            Pattern p = Pattern.compile("(^[0-9]*$)");
+            Matcher m = p.matcher(hitP);
+            if(!m.find()){
+                return;
+            }
+            
         }
         if(nm == "?" && it == "0" && hitP == "0"){
             return;
         }
         boolean added = false;
-        for(int i = 0; i< order.size(); i++){   
-            if(Integer.parseInt(it) < Integer.parseInt(order.get(i).getInitiative())){
+        String compareInit1 = "";
+        for(int c = 0; c < it.length(); c++){
+            if(Character.isDigit(it.charAt(c))){
+                compareInit1 += it.charAt(c);
+            }
+            else if(c == 0 && (it.charAt(c) == '+' || it.charAt(c) == '-')){
+                continue;
+            }
+            else{
+                return;
+            }
+            /*else if(it.charAt(c) != '+' || it.charAt(c) == '-' || it.charAt(c) == '(' || it.charAt(c) == ')' || it.charAt(c) == ' '){
+                return;
+            }*/
+        }
+        int toCompare = Integer.parseInt(compareInit1);
+        int i;
+        for(i = 0; i< order.size(); i++){   
+            if(toCompare > Integer.parseInt(order.get(i).getInitiative())){
                 order.add(i, new Creature(it, nm, hitP));
                 added = true;
                 break;
@@ -74,6 +143,9 @@ public class Initracker extends Application {
         }
         n.setText("");
         in.setText("");
+        if(randomizeInit.isSelected()){
+            in.setText("+");
+        }
         h.setText("");
 
     }
@@ -105,6 +177,7 @@ public class Initracker extends Application {
         TableColumn nameCol = new TableColumn("Creature");
         nameCol.setCellValueFactory(new PropertyValueFactory("cName"));
         nameCol.setCellFactory(TextFieldTableCell.forTableColumn());
+
         //nameCol.setPrefWidth(150);
         nameCol.setSortable(false);
 
@@ -193,6 +266,18 @@ public class Initracker extends Application {
         });
 
 
+        randomizeInit.setOnAction(e -> {
+            if(randomizeInit.isSelected()){
+                initField.setText("+" + initField.getText());
+                initL.setText("Initiative modifier:");
+            }
+            else if(!randomizeInit.isSelected()){
+                if(initField.getText().charAt(0) == '+'){
+                    initField.setText(initField.getText().substring(1));
+                }
+                initL.setText("Initiative:");
+            }
+        });
 
         /*
         // Create and position the "Remove" Button
@@ -208,8 +293,55 @@ public class Initracker extends Application {
         }); */
 
         // Setting options
-        aPane.add(randomizeInit, 3, 2, 2, 1);
 
+        VBox panel = new VBox();
+
+        panel.setSpacing(5);
+
+        Label cb = new Label("No Chosen Creature");
+        cb.setFont(inputF);
+
+        TextField modify = new TextField("0");
+
+        Button dmg = new Button("Damage");
+
+        Button heal = new Button("Heal");
+
+        Button remove = new Button("Remove from combat");
+
+        HBox modHP = new HBox();
+
+        modHP.setSpacing(10);
+
+        modHP.getChildren().addAll(dmg, heal);
+
+        remove.setOnAction(e -> {
+            int idx = initList.getSelectionModel().getSelectedIndex();
+            order.remove(idx);
+        });
+
+        initList.setOnMouseClicked(e -> {cb.setText("Chosen Creature: " + initList.getSelectionModel().getSelectedItem().getCName());});
+
+        dmg.setOnAction(e -> {
+                int idx = initList.getSelectionModel().getSelectedIndex();
+                Creature c = order.get(idx);
+                c.modifyHP(-Integer.parseInt(modify.getText()));
+                order.set(idx, c);
+        });
+        
+        heal.setOnAction(e -> {
+            int idx = initList.getSelectionModel().getSelectedIndex();
+            Creature c = order.get(idx);
+            c.modifyHP(-Integer.parseInt(modify.getText()));
+            order.set(idx, c);
+        });
+
+        randomizeInit.setPadding(new Insets(15, 0 ,0 , 0));
+
+        panel.getChildren().addAll(cb, modify, modHP, remove, randomizeInit);
+
+
+        aPane.add(panel, 3, 2, 2, 1);
 
         //Set padding
         aPane.setPadding(new Insets(10));
@@ -240,6 +372,8 @@ public class Initracker extends Application {
         aPane.getColumnConstraints().addAll(col1,col2,col3, col4);
         aPane.getRowConstraints().addAll(row2);
 
+        primaryStage.setMinHeight(MIN_HEIGHT);
+        primaryStage.setMinWidth(MIN_WIDTH);
         primaryStage.setTitle("D&D Initiative Tracker"); // Set title of window
         primaryStage.setResizable(true); // Make it non-resizable
         primaryStage.setScene(scene);   
@@ -271,6 +405,12 @@ public class Initracker extends Application {
 
         public String getHp() {
             return hitpoints;
+        }
+        
+        public void modifyHP(int n){
+            int tot = (Integer.parseInt(this.hitpoints) + n);
+            this.hitpoints = Integer.toString(Math.max(tot, 0));
+            System.out.println(tot);
         }
     }
 }
