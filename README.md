@@ -4,11 +4,21 @@ Project for WhiskerHacks Hackathon 2023
 Inspired by Dungeons & Dragons 5th edition combat rules. This program is not to be used commercially, but rather as a free tool for 
 Game Masters for any Tabletop RPG games. 
 
+Current features:
+
+- Add/Remove creatures to list with Iniatiative value, name and total hitpoints
+- Modify hitpoints of chosen creature from the list (either increase or decrease)
+- Hitpoint field accepts dice rolling format: xdy+z 
+  - (x = number of dice to roll, y = value of a singular die (a d6 is a six-sided die), z = modifier)
+- Randomize initiative field calculates a pseudorandom number from 1-20 (like rolling 1d20). 
+  - Field changed to accept modifier rather than final value.
+- Default values for empty fields (? for name, 0 for initiative, 1 for hitpoints).  
+
 Currently in concept stage, ideal features to be added (following dnd 5e rules) include:
 
 - Web/mobile browser compatibility
 - Column with conditions (charmed, stunned, poisoned, etc)
-- Visualization of enemy stat blocks (from a site like dndbeyond free stat blocks)
+- Visualization of enemy stat blocks (from a site like dndbeyond, free stat blocks)
 - On site dice roller for creature modifiers for specific attacks/abilities/saving throws
-- Custom creature stat block builder to include in initiative (can be used for players)
+- Custom creature stat block builder to include in combat (can be used for players)
 - Save/Load feature for sessions that end mid-combat
