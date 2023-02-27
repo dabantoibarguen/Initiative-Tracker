@@ -8,7 +8,7 @@ Current features:
 
 - Add/Remove creatures to list with Iniatiative value, name and total hitpoints
 - Modify hitpoints of chosen creature from the list (either increase or decrease)
-- Hitpoint field accepts dice rolling format: xdy+z 
+- Hitpoint field accepts dice rolling format: xdy+z (e.g. 3d6+6)
   - (x = number of dice to roll, y = value of a singular die (a d6 is a six-sided die), z = modifier)
 - Randomize initiative field calculates a pseudorandom number from 1-20 (like rolling 1d20). 
   - Field changed to accept modifier rather than final value.
