@@ -26,9 +26,7 @@ Currently in concept stage, ideal features to be added (following dnd 5e rules) 
 - Save/Load feature for sessions that end mid-combat
 - Settings tab
 - Instructions tab (for new or non-ttrpg players)
-- Dice roll display area (for hitpoints and custom dice roller)
-- Custom dice roller (separate tab)
-
+- Dice roll display area (for hitpoints and on site dice roller)
 
 Commands to run from files (javafx required):
 export PATH_TO_FX=~/Initiative_Tracker/Initiative-Tracker/lib/
