@@ -110,7 +110,7 @@ public class Initracker extends Application {
             }
             
         }
-        if(nm == "?" && it == "0" && hitP == "0"){
+        if(nm == "?" && it == "0" && hitP == "1"){
             return;
         }
         boolean added = false;
@@ -265,7 +265,7 @@ public class Initracker extends Application {
             }
         });
 
-
+        // Check box interactions
         randomizeInit.setOnAction(e -> {
             if(randomizeInit.isSelected()){
                 initField.setText("+" + initField.getText());
@@ -278,19 +278,6 @@ public class Initracker extends Application {
                 initL.setText("Initiative:");
             }
         });
-
-        /*
-        // Create and position the "Remove" Button
-        Button removeButton = new Button("Remove");
-        removeButton.relocate(175, 45);
-        removeButton.setPrefSize(100, 25);
-
-        removeButton.setOnAction(evt -> {
-            if (newItemField.getText() != null && order.contains(newItemField.getText())) {
-                order.remove(newItemField.getText());  
-                newItemField.setText(null);
-            }
-        }); */
 
         // Setting options
 
@@ -314,6 +301,8 @@ public class Initracker extends Application {
         modHP.setSpacing(10);
 
         modHP.getChildren().addAll(dmg, heal);
+
+        // Removing, damaging and healing
 
         remove.setOnAction(e -> {
             int idx = initList.getSelectionModel().getSelectedIndex();
@@ -343,7 +332,6 @@ public class Initracker extends Application {
 
         aPane.add(panel, 3, 2, 2, 1);
 
-        //Set padding
         aPane.setPadding(new Insets(10));
 
         aPane.setHgap(5);
@@ -357,6 +345,7 @@ public class Initracker extends Application {
             }
         });
 
+        // Grid pane constraints
 
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setPercentWidth(30);
@@ -371,6 +360,8 @@ public class Initracker extends Application {
         col4.setPercentWidth(10);
         aPane.getColumnConstraints().addAll(col1,col2,col3, col4);
         aPane.getRowConstraints().addAll(row2);
+
+        // Display and window configurations
 
         primaryStage.setMinHeight(MIN_HEIGHT);
         primaryStage.setMinWidth(MIN_WIDTH);
