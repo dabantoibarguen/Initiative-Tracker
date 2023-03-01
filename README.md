@@ -22,9 +22,13 @@ Currently in concept stage, ideal features to be added (following dnd 5e rules) 
 - On site dice roller for creature modifiers for specific attacks/abilities/saving throws
 - Custom creature stat block builder to include in combat (can be used for players)
 - Save/Load feature for sessions that end mid-combat
+- Settings tab
+- Instructions tab (for new or non-ttrpg players)
+- Dice roll display area (for hitpoints and custom dice roller)
+- Custom dice roller (separate tab)
 
 
-Commands to run from files:
+Commands to run from files (javafx required):
 export PATH_TO_FX=~/Initiative_Tracker/Initiative-Tracker/lib/
 javac --module-path $PATH_TO_FX --add-modules=ALL-MODULE-PATH Initracker.java
 java --module-path $PATH_TO_FX --add-modules=ALL-MODULE-PATH Initracker
