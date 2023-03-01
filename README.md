@@ -1,8 +1,10 @@
 # Initiative-Tracker
 Project for WhiskerHacks Hackathon 2023
 
+Demo: https://youtu.be/l3HQ9Rb3XJI?t=8
+
 Inspired by Dungeons & Dragons 5th edition combat rules. This program is not to be used commercially, but rather as a free tool for 
-Game Masters for any Tabletop RPG games. 
+Game Masters and players of other Tabletop RPG games. 
 
 Current features:
 
