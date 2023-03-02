@@ -33,12 +33,14 @@ import javafx.scene.text.Font;
 import javafx.scene.control.CheckBox;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.*;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.Tab;
 
 
 public class Initracker extends Application {
 
     public static final int MIN_WIDTH = 600;
-    public static final int MIN_HEIGHT = 300;
+    public static final int MIN_HEIGHT = 325;
 
     // Table view to see the housemates and room numbers
     private final TableView<Creature> initList = new TableView<>();
@@ -47,115 +49,13 @@ public class Initracker extends Application {
 
     CheckBox randomizeInit = new CheckBox("Random Initiative");
 
-    public void assignCreature(TextField n, TextField in, TextField h){
-        String nm = "?";
-        String it = "0";
-        String hitP = "1";
-        if(!n.getText().isEmpty()){
-            nm = n.getText();
-        }
-        if(!in.getText().isEmpty()){
-            it = in.getText();
-        }
-        if(randomizeInit.isSelected()){
-            int inN = ThreadLocalRandom.current().nextInt(1, 20);
-            Character sign = in.getText().charAt(0);
-            it = Integer.toString(inN);
-            if(!in.getText().isEmpty()){
-                int start = 1;
-                if(sign == '+' || sign == '-'){
-                    start = 0;
-                }
-                inN += Integer.parseInt(in.getText().substring(start));
-                it = Integer.toString(inN);
-                //it += sign + " (" + it + ")";
-            }
-        }
-        if(!h.getText().isEmpty()){
-            hitP = h.getText();
-            Pattern dice = Pattern.compile("([0-9]*)([dD]?)([0-9]*)([+]?)([0-9]*$)");
-            Matcher match = dice.matcher(hitP);
-            if(!match.find()){
-                return;
-            }
-            if(match.group(2) != ""){
-                int result = 0;
-                int gOne = 1;
-                int gThree = 1;
-                if(match.group(1) != ""){
-                    gOne = Integer.parseInt(match.group(1));
-                }
-                if(match.group(3) != ""){
-                    gThree = Integer.parseInt(match.group(3));
-                }
-                int rollGThree = 0;
-                for(int r = 0; r<gOne; r++){
-                    if(gThree != 1){
-                        rollGThree += ThreadLocalRandom.current().nextInt(1, gThree+1);
-                    }
-                    else{
-                        rollGThree += 1;
-                    }
-                }
-                result = rollGThree;
-                if(match.group(4) != "" && match.group(5) != ""){
-                    result += Integer.parseInt(match.group(5));
-                }
-                hitP = Integer.toString(result); 
-            }
-            Pattern p = Pattern.compile("(^[0-9]*$)");
-            Matcher m = p.matcher(hitP);
-            if(!m.find()){
-                return;
-            }
-            
-        }
-        if(nm == "?" && it == "0" && hitP == "1"){
-            return;
-        }
-        boolean added = false;
-        String compareInit1 = "";
-        for(int c = 0; c < it.length(); c++){
-            if(Character.isDigit(it.charAt(c))){
-                compareInit1 += it.charAt(c);
-            }
-            else if(c == 0 && (it.charAt(c) == '+' || it.charAt(c) == '-')){
-                continue;
-            }
-            else{
-                return;
-            }
-            /*else if(it.charAt(c) != '+' || it.charAt(c) == '-' || it.charAt(c) == '(' || it.charAt(c) == ')' || it.charAt(c) == ' '){
-                return;
-            }*/
-        }
-        int toCompare = Integer.parseInt(compareInit1);
-        int i;
-        for(i = 0; i< order.size(); i++){   
-            if(toCompare > Integer.parseInt(order.get(i).getInitiative())){
-                order.add(i, new Creature(it, nm, hitP));
-                added = true;
-                break;
-            }
-        }
-        if(!added){
-            order.add(new Creature(it, nm, hitP));
-        }
-        n.setText("");
-        in.setText("");
-        if(randomizeInit.isSelected()){
-            in.setText("+");
-        }
-        h.setText("");
+    Font inputF = new Font("Modesto Bold Condensed", 14);
+    Font titleF = new Font("Modesto Bold Condensed", 26);
 
-    }
-
-    public void start(Stage primaryStage) {
+    public GridPane createTracker(){
         GridPane aPane = new GridPane();
 
         Font plus = new Font("Komoda", 18);
-        Font inputF = new Font("Modesto Bold Condensed", 14);
-        Font titleF = new Font("Modesto Bold Condensed", 26);
 
         Label title = new Label("Initiative Tracker");
         title.setFont(titleF);
@@ -226,8 +126,6 @@ public class Initracker extends Application {
         hpB.getChildren().addAll(hpL, hpField);
 
         aPane.add(hpB, 2, 1);
-
-
 
         // Create and position the "Add" Button
         Button addButton = new Button("+");
@@ -337,14 +235,6 @@ public class Initracker extends Application {
         aPane.setHgap(5);
         aPane.setVgap(10);
 
-        Scene scene = new Scene(aPane, MIN_WIDTH, MIN_HEIGHT); // Set size of window as a scene
-
-        scene.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.ESCAPE) {
-              Platform.exit();
-            }
-        });
-
         // Grid pane constraints
 
         ColumnConstraints col1 = new ColumnConstraints();
@@ -361,8 +251,29 @@ public class Initracker extends Application {
         aPane.getColumnConstraints().addAll(col1,col2,col3, col4);
         aPane.getRowConstraints().addAll(row2);
 
-        // Display and window configurations
+        return aPane;
+    }
 
+    public void start(Stage primaryStage) {
+        TabPane tabPane = new TabPane();
+
+        Tab home = new Tab("Home", new Label("Applications and how to use them"));
+        Tab tracker = new Tab("Tracker"  , new Label("Initiative tracker application"));
+        Tab settings = new Tab("Settings"  , new Label("Customize each application"));
+       
+        tabPane.getTabs().addAll(home, tracker, settings);
+       
+        Scene scene = new Scene(tabPane, MIN_WIDTH, MIN_HEIGHT); // Set size of window as a scene
+
+        scene.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+              Platform.exit();
+            }
+        });
+
+        tracker.setContent(createTracker());
+
+        // Display and window configurations
         primaryStage.setMinHeight(MIN_HEIGHT);
         primaryStage.setMinWidth(MIN_WIDTH);
         primaryStage.setTitle("D&D Initiative Tracker"); // Set title of window
@@ -370,6 +281,113 @@ public class Initracker extends Application {
         primaryStage.setScene(scene);   
         primaryStage.show();
     }
+
+
+    // 
+    public void assignCreature(TextField n, TextField in, TextField h){
+        String nm = "?";
+        String it = "0";
+        String hitP = "1";
+        if(!n.getText().isEmpty()){
+            nm = n.getText();
+        }
+        if(!in.getText().isEmpty()){
+            it = in.getText();
+        }
+        if(randomizeInit.isSelected()){
+            int inN = ThreadLocalRandom.current().nextInt(1, 20);
+            Character sign = in.getText().charAt(0);
+            it = Integer.toString(inN);
+            if(!in.getText().isEmpty()){
+                int start = 1;
+                if(sign == '+' || sign == '-'){
+                    start = 0;
+                }
+                inN += Integer.parseInt(in.getText().substring(start));
+                it = Integer.toString(inN);
+                //it += sign + " (" + it + ")";
+            }
+        }
+        if(!h.getText().isEmpty()){
+            hitP = h.getText();
+            Pattern dice = Pattern.compile("([0-9]*)([dD]?)([0-9]*)([+]?)([0-9]*$)");
+            Matcher match = dice.matcher(hitP);
+            if(!match.find()){
+                return;
+            }
+            if(match.group(2) != ""){
+                int result = 0;
+                int gOne = 1;
+                int gThree = 1;
+                if(match.group(1) != ""){
+                    gOne = Integer.parseInt(match.group(1));
+                }
+                if(match.group(3) != ""){
+                    gThree = Integer.parseInt(match.group(3));
+                }
+                int rollGThree = 0;
+                for(int r = 0; r<gOne; r++){
+                    if(gThree != 1){
+                        rollGThree += ThreadLocalRandom.current().nextInt(1, gThree+1);
+                    }
+                    else{
+                        rollGThree += 1;
+                    }
+                }
+                result = rollGThree;
+                if(match.group(4) != "" && match.group(5) != ""){
+                    result += Integer.parseInt(match.group(5));
+                }
+                hitP = Integer.toString(result); 
+            }
+            Pattern p = Pattern.compile("(^[0-9]*$)");
+            Matcher m = p.matcher(hitP);
+            if(!m.find()){
+                return;
+            }
+            
+        }
+        if(nm == "?" && it == "0" && hitP == "1"){
+            return;
+        }
+        boolean added = false;
+        String compareInit1 = "";
+        for(int c = 0; c < it.length(); c++){
+            if(Character.isDigit(it.charAt(c))){
+                compareInit1 += it.charAt(c);
+            }
+            else if(c == 0 && (it.charAt(c) == '+' || it.charAt(c) == '-')){
+                continue;
+            }
+            else{
+                return;
+            }
+            /*else if(it.charAt(c) != '+' || it.charAt(c) == '-' || it.charAt(c) == '(' || it.charAt(c) == ')' || it.charAt(c) == ' '){
+                return;
+            }*/
+        }
+        int toCompare = Integer.parseInt(compareInit1);
+        int i;
+        for(i = 0; i< order.size(); i++){   
+            if(toCompare > Integer.parseInt(order.get(i).getInitiative())){
+                order.add(i, new Creature(it, nm, hitP));
+                added = true;
+                break;
+            }
+        }
+        if(!added){
+            order.add(new Creature(it, nm, hitP));
+        }
+        n.setText("");
+        in.setText("");
+        if(randomizeInit.isSelected()){
+            in.setText("+");
+        }
+        h.setText("");
+
+    }
+
+
 
     public static void main(String[] args){
         launch();
@@ -401,7 +419,6 @@ public class Initracker extends Application {
         public void modifyHP(int n){
             int tot = (Integer.parseInt(this.hitpoints) + n);
             this.hitpoints = Integer.toString(Math.max(tot, 0));
-            System.out.println(tot);
         }
     }
 }
