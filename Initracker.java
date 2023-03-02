@@ -321,7 +321,7 @@ public class Initracker extends Application {
         heal.setOnAction(e -> {
             int idx = initList.getSelectionModel().getSelectedIndex();
             Creature c = order.get(idx);
-            c.modifyHP(-Integer.parseInt(modify.getText()));
+            c.modifyHP(Integer.parseInt(modify.getText()));
             order.set(idx, c);
         });
 
