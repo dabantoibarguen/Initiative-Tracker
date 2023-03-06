@@ -35,8 +35,11 @@ Currently in concept stage, ideal features to be added (following dnd 5e rules) 
   - Dice roll display area (for hitpoints and on site dice roller)
 
 Commands to run from files (javafx required):
+
 export PATH_TO_FX=~(FOLDER LOCATION)/lib/
+
 javac --module-path $PATH_TO_FX --add-modules=ALL-MODULE-PATH Initracker.java
+
 java --module-path $PATH_TO_FX --add-modules=ALL-MODULE-PATH Initracker
 
 <img width="606" alt="Preview Image" src="https://user-images.githubusercontent.com/78096139/223048646-f811bcd2-1381-4a22-96c2-9ca6cadd744f.png">
