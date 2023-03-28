@@ -42,5 +42,10 @@ javac --module-path $PATH_TO_FX --add-modules=ALL-MODULE-PATH Initracker.java
 
 java --module-path $PATH_TO_FX --add-modules=ALL-MODULE-PATH Initracker
 
+Initial version:
 <img width="601" alt="Preview Image" src="https://user-images.githubusercontent.com/78096139/223049405-638b6f28-5c51-4e3a-b3f3-3cb08e6c9734.png">
+
+Current version:
+<img width="1433" alt="Screenshot 2023-03-28 at 1 43 42 PM" src="https://user-images.githubusercontent.com/78096139/228323800-00722b3c-5d8c-4672-829c-cb52a71c0eb2.png">
+
 
