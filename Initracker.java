@@ -96,13 +96,14 @@ public void start(Stage primaryStage) {
     Tab settings = new Tab("Tracker Settings"  , new Label("Customize the Initiative Tracker"));
     Tab statBlock = new Tab("Stat Block"  , new Label("Reference creature stat block"));
     
-    VBox banditBox = new VBox();
+    ScrollPane banditBox = new ScrollPane();
     
-    Image banditImg = new Image(new FileInputStream("/bandit.png"));
+    Image banditImg = new Image("/bandit.png");
 
     ImageView imageView = new ImageView(banditImg); 
 
-    banditBox.getChildren().addAll(imageView);
+
+    banditBox.setContent(imageView);
 
     tabPane.getTabs().addAll(tracker, settings, statBlock);
 
@@ -411,6 +412,7 @@ public void start(Stage primaryStage) {
         closeP.setOnAction(e -> {
             hpPanel.setVisible(false);
             closeP.setVisible(false);
+            initList.getSelectionModel().setSelectionMode(null);
         });
 
         closePanel.setAlignment(Pos.TOP_RIGHT);
@@ -471,20 +473,7 @@ public void start(Stage primaryStage) {
 
         // Removing, damaging and healing
 
-        remove.setOnAction(e -> {
-            if(initList.getSelectionModel().getSelectedItem() != null){
-                if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0")){
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.get() == ButtonType.CANCEL){        
-                        return;
-                    }
-                }
-            }
-            int idx = initList.getSelectionModel().getSelectedIndex();
-                        order.remove(idx);
-                        hpPanel.setVisible(false);
-                        closeP.setVisible(false);
-        });
+        remove.setOnAction(e -> {removeCreature(hpPanel, closeP, hpField,alert);});
 
         initList.setOnMouseClicked(e -> {
             if(initList.getSelectionModel().getSelectedItem() != null){
@@ -496,6 +485,7 @@ public void start(Stage primaryStage) {
                 else{
                     remove.setStyle("-fx-opacity: 1.0");
                 }
+                modify.setText("");
                 hpPanel.setVisible(true);  
                 closeP.setVisible(true);              
             }
@@ -605,14 +595,17 @@ public void start(Stage primaryStage) {
         firstCheck.getChildren().addAll(randomizeInit);
         firstCheck.setAlignment(Pos.CENTER_LEFT);
 
+        firstCheck.getStyleClass().add("lined");
+
         settingPane.add(firstCheck, 0, 0);
 
         TextArea randInit = new TextArea("The initiative field will now take a modifier instead of a total value. The final iniative will be a random value from 1-20 with the modifier added (or substracted if negative) to the total.");
         randInit.setEditable(false);
         randInit.setWrapText(true);
 
-        randInit.setMaxHeight(60);
-        randInit.setMaxWidth(450);
+        randInit.getStyleClass().add("lined");
+
+        randInit.setMaxHeight(65);
 
         //randInit.setMaxWidth(100);
         
@@ -622,11 +615,13 @@ public void start(Stage primaryStage) {
 
         // Show example creature
 
-        TextArea example = new TextArea("The text fields will now display the input for an example creature (a guard)");
+        TextArea example = new TextArea("The text fields will now display the input for an example creature (a bandit)");
         example.setEditable(false);
         example.setWrapText(true);
         
-        example.setMaxHeight(15);
+        example.setMaxHeight(45);
+
+        example.getStyleClass().add("lined");
 
         //example.setMaxWidth(100);
 
@@ -635,6 +630,8 @@ public void start(Stage primaryStage) {
         HBox secondCheck = new HBox();
         secondCheck.getChildren().addAll(showExample);
         secondCheck.setAlignment(Pos.CENTER_LEFT);
+
+        secondCheck.getStyleClass().add("lined");
 
         settingPane.add(secondCheck, 0, 1);
 
@@ -807,6 +804,25 @@ public void start(Stage primaryStage) {
             h.setText("");
         }
 
+    }
+
+// ------------------------------REMOVE CREATURE -----------------------
+    public void removeCreature(VBox hpPanel, Button closeP, TextField modify, Alert alert){
+        if(initList.getSelectionModel().getSelectedItem() != null){
+            if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0")){
+                alert.setHeaderText(initList.getSelectionModel().getSelectedItem().getCName() + " has hit points remaining");
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.CANCEL){        
+                    return;
+                }
+            }
+        }
+        int idx = initList.getSelectionModel().getSelectedIndex();
+                    order.remove(idx);
+                    hpPanel.setVisible(false);
+                    closeP.setVisible(false);
+                    modify.setText("");
+    
     }
 
 // ----------------------------- MAIN --------------------------
