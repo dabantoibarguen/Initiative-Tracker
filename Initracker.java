@@ -1,18 +1,3 @@
-/*import java.security.Guard;
-
-import javax.swing.ButtonModel;
-import javax.swing.SortOrder;
-import javax.swing.event.ChangeListener;
-import javax.swing.text.TabableView;*/
-
-/* TO - DO
- * 
- * Make creatures erasable with the backspace key
- * Allow for enter key when choosing a creature
- * Create window with example stat block
- */
-
-
 import java.util.function.UnaryOperator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.*;
@@ -26,8 +11,6 @@ import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.stage.Stage;
 import javafx.scene.input.KeyCode;
 import javafx.application.Platform;
-import javafx.beans.value.ObservableStringValue;
-import javafx.beans.value.ObservableValue;
 //import javafx.collections.ListChangeListener;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.collections.ObservableList;
@@ -37,25 +20,17 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.media.SubtitleTrack;
 import javafx.scene.layout.GridPane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.scene.control.Alert.AlertType;
-import javafx.util.StringConverter;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.scene.control.TextFormatter.Change;
-import java.io.FileInputStream; 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -82,6 +57,8 @@ public class Initracker extends Application {
     CheckBox randomizeInit = new CheckBox("Random Initiative");
     CheckBox showExample = new CheckBox("Show example creature");
     CheckBox clearFields = new CheckBox("Empty fields");
+    CheckBox displayDice = new CheckBox("Display dice rolled");
+    CheckBox warnOnRemove = new CheckBox("Warning for removing");
 
     Font inputF = new Font("Modesto Bold Condensed", 14);
     Font titleF = new Font("Modesto Bold Condensed", 26);
@@ -93,7 +70,7 @@ public class Initracker extends Application {
 public void start(Stage primaryStage) {
     //Tab home = new Tab("Home", new Label("Applications and how to use them"));
     Tab tracker = new Tab("Tracker"  , new Label("Initiative tracker application"));
-    Tab settings = new Tab("Tracker Settings"  , new Label("Customize the Initiative Tracker"));
+    Tab settings = new Tab("Settings"  , new Label("Customize the Initiative Tracker"));
     Tab statBlock = new Tab("Stat Block"  , new Label("Reference creature stat block"));
     
     ScrollPane banditBox = new ScrollPane();
@@ -102,8 +79,10 @@ public void start(Stage primaryStage) {
 
     ImageView imageView = new ImageView(banditImg); 
 
-
     banditBox.setContent(imageView);
+
+    imageView.fitWidthProperty().bind(banditBox.widthProperty());
+    imageView.fitHeightProperty().bind(banditBox.heightProperty());
 
     tabPane.getTabs().addAll(tracker, settings, statBlock);
 
@@ -269,9 +248,12 @@ public void start(Stage primaryStage) {
         Label initL = new Label("Initiative:");
         //initL.setFont(inputF);
         initL.getStyleClass().add("red-labels");
+
+        Tooltip initTooltip = new Tooltip("Defines position in list (descending order)");
         
         TextField initField = new TextField();
         initField.setPromptText("Total");
+        initField.setTooltip(initTooltip);
 
         VBox initB = new VBox();
         initB.getChildren().addAll(initL, initField);
@@ -286,7 +268,7 @@ public void start(Stage primaryStage) {
         TextField hpField = new TextField();
         hpField.setPromptText("Total / Dice");
 
-        Tooltip rollDice = new Tooltip("Dice: 1d8+2 = (random value from 1-8) + 2");
+        Tooltip rollDice = new Tooltip("Example with dice: 1d8+2 = (random value from 1-8) + 2");
 
         hpField.setTooltip(rollDice);
 
@@ -342,55 +324,9 @@ public void start(Stage primaryStage) {
             }
         });
 
-        // Setting options
-
-        // Use modifiers instead of fixed value
-        randomizeInit.setOnAction(e -> {
-            if(randomizeInit.isSelected()){
-                initL.setText("Modifier:");
-                if(!showExample.isSelected()){
-                    initField.setPromptText("+ or -");
-                }
-                else{
-                    initField.setPromptText("+1");
-                }
-            }
-            else if(!randomizeInit.isSelected()){
-                //if(!initField.getText().isEmpty() && initField.getText().charAt(0) == '+' || initField.getText().charAt(0) == '-'){
-                  //  initField.setText(initField.getText().substring(1));
-                //}
-                initL.setText("Initiative:");
-                initField.setPromptText("Total");
-            }
-        });
-
-        // Replace prompt text with example
-        showExample.setOnAction(e -> {
-            if(showExample.isSelected()){
-                nameField.setPromptText("Bandit");
-                initField.setPromptText("11");
-                hpField.setPromptText("2d8+2");
-                if(randomizeInit.isSelected()){
-                    initField.setPromptText("+1");
-                }
-            }
-            else if(!showExample.isSelected()){
-                nameField.setPromptText("Enter a name");
-                if(randomizeInit.isSelected()){
-                    initField.setPromptText("+ or -");
-                }
-                else{
-                    initField.setPromptText("Total");
-                }
-                hpField.setPromptText("Total / Dice");
-
-            }
-        });
-
-
-
 
         // Create the panel to affect a creature's hit points
+
         VBox hpPanel = new VBox();
 
         hpPanel.setId("influence");
@@ -399,13 +335,17 @@ public void start(Stage primaryStage) {
 
         hpPanel.setSpacing(5);
         
-        hpPanel.setPadding(new Insets(10));
+        hpPanel.setPadding(new Insets(5));
 
         hpPanel.setMaxWidth(Integer.MAX_VALUE);
 
         HBox closePanel = new HBox();
 
+        Tooltip closePTt = new Tooltip("Close the creature info panel");
+
         Button closeP = new Button("x");
+
+        closeP.setTooltip(closePTt);
 
         closeP.setVisible(false);
 
@@ -475,11 +415,69 @@ public void start(Stage primaryStage) {
 
         remove.setOnAction(e -> {removeCreature(hpPanel, closeP, hpField,alert);});
 
+        // Checkbox actions
+
+        randomizeInit.setOnAction(e -> {
+            if(randomizeInit.isSelected()){
+                initL.setText("Modifier:");
+                if(!showExample.isSelected()){
+                    initField.setPromptText("+ or -");
+                }
+                else{
+                    initField.setPromptText("+1");
+                }
+            }
+            else if(!randomizeInit.isSelected()){
+                //if(!initField.getText().isEmpty() && initField.getText().charAt(0) == '+' || initField.getText().charAt(0) == '-'){
+                    //  initField.setText(initField.getText().substring(1));
+                //}
+                initL.setText("Initiative:");
+                initField.setPromptText("Total");
+            }
+        });
+        
+        showExample.setOnAction(e -> {
+            if(showExample.isSelected()){
+                nameField.setPromptText("Bandit");
+                initField.setPromptText("11");
+                hpField.setPromptText("2d8+2");
+                if(randomizeInit.isSelected()){
+                    initField.setPromptText("+1");
+                }
+            }
+            else if(!showExample.isSelected()){
+                nameField.setPromptText("Enter a name");
+                if(randomizeInit.isSelected()){
+                    initField.setPromptText("+ or -");
+                }
+                else{
+                    initField.setPromptText("Total");
+                }
+                hpField.setPromptText("Total / Dice");
+
+            }
+        });
+
+        displayDice.setOnAction(e -> {
+            if(!displayDice.isSelected()){
+                dicePanel.setVisible(false);
+            }
+        });
+
+        warnOnRemove.setOnAction(e -> {
+            if(!warnOnRemove.isSelected()){
+                remove.setStyle("-fx-opacity: 1.0");
+            }
+        });
+
+
+        // Display the panel
+
         initList.setOnMouseClicked(e -> {
             if(initList.getSelectionModel().getSelectedItem() != null){
                 cb.setText(initList.getSelectionModel().getSelectedItem().getCName());
                 currentHp.setText("Current Hit points: " + initList.getSelectionModel().getSelectedItem().getHp());
-                if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0")){
+                if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0") && warnOnRemove.isSelected()){
                     remove.setStyle("-fx-opacity: 0.3");
                 }
                 else{
@@ -491,6 +489,8 @@ public void start(Stage primaryStage) {
             }
         });
 
+        // Button functionality for health panel
+
         dmg.setOnAction(e -> { // Fix on empty input field
             if(initList.getSelectionModel().getSelectedItem() != null && !modify.getText().isEmpty()){
 
@@ -499,7 +499,7 @@ public void start(Stage primaryStage) {
                 c.modifyHP(-Integer.parseInt(modify.getText()));
                 currentHp.setText("Current Hit points: " + initList.getSelectionModel().getSelectedItem().getHp());
                 order.set(idx, c);
-                if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0")){
+                if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0") && warnOnRemove.isSelected()){
                     System.out.println(initList.getSelectionModel().getSelectedItem().getHp());
                     remove.setStyle("-fx-opacity: 0.3");
                 }
@@ -517,7 +517,7 @@ public void start(Stage primaryStage) {
                 c.modifyHP(Integer.parseInt(modify.getText()));
                 currentHp.setText("Current Hit points: " + initList.getSelectionModel().getSelectedItem().getHp());
                 order.set(idx, c);
-                if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0")){
+                if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0") && warnOnRemove.isSelected()){
                     remove.setStyle("-fx-opacity: 0.3");
                 }
                 else{
@@ -555,9 +555,6 @@ public void start(Stage primaryStage) {
         initField.setTextFormatter(
             new TextFormatter<Integer>(new IntegerStringConverter(), null, integerFilter));
 
-        /*hpField.setTextFormatter(
-            new TextFormatter<Integer>(new IntegerStringConverter(), null, diceFilter));*/
-    
 
         // Grid pane constraints
 
@@ -582,12 +579,17 @@ public void start(Stage primaryStage) {
         return aPane;
     }
 
+
+
+
 // ----------------------------- SETTINGS --------------------------
 
     public GridPane createSettings(){
         GridPane settingPane = new GridPane();
 
         settingPane.setPadding(new Insets(10));
+
+
 
         // Randomize Initiative
 
@@ -606,16 +608,15 @@ public void start(Stage primaryStage) {
         randInit.getStyleClass().add("lined");
 
         randInit.setMaxHeight(65);
-
-        //randInit.setMaxWidth(100);
-        
-        randInit.autosize();
         
         settingPane.add(randInit, 1, 0);
 
+
+
+
         // Show example creature
 
-        TextArea example = new TextArea("The text fields will now display the input for an example creature (a bandit)");
+        TextArea example = new TextArea("The text fields will now display the input for an example creature (a bandit). See Statblock tab.");
         example.setEditable(false);
         example.setWrapText(true);
         
@@ -623,7 +624,6 @@ public void start(Stage primaryStage) {
 
         example.getStyleClass().add("lined");
 
-        //example.setMaxWidth(100);
 
         settingPane.add(example, 1, 1);
 
@@ -635,12 +635,18 @@ public void start(Stage primaryStage) {
 
         settingPane.add(secondCheck, 0, 1);
 
+
+
+
         // Clear fields after input
+        
         TextArea clearF = new TextArea("Empties every input field after adding a new creature.");
         clearF.setEditable(false);
         clearF.setWrapText(true);
 
         clearF.setMaxHeight(20);
+
+        clearF.getStyleClass().add("lined");
 
         settingPane.add(clearF, 1, 2);
 
@@ -650,7 +656,52 @@ public void start(Stage primaryStage) {
         thirdCheck.getChildren().addAll(clearFields);
         thirdCheck.setAlignment(Pos.CENTER_LEFT);
 
+        thirdCheck.getStyleClass().add("lined");
+
         settingPane.add(thirdCheck, 0, 2);
+        
+
+        HBox fourthCheck = new HBox();
+        fourthCheck.getChildren().addAll(displayDice);
+        fourthCheck.setAlignment(Pos.CENTER_LEFT);
+        
+        fourthCheck.getStyleClass().add("lined");
+
+        settingPane.add(fourthCheck, 0, 3);
+
+        displayDice.setSelected(true);
+
+        TextArea dispD = new TextArea("Displays each die rolled and the total when using the dice format for hitpoints.");
+        dispD.setEditable(false);
+        dispD.setWrapText(true);
+
+        dispD.getStyleClass().add("lined");
+
+        dispD.setMaxHeight(45);
+
+        settingPane.add(dispD, 1, 3);
+
+
+
+
+        // Warning before removing a creature with hit points remaining
+
+        HBox fifthCheck = new HBox();
+        fifthCheck.getChildren().addAll(warnOnRemove);
+        fifthCheck.setAlignment(Pos.CENTER_LEFT);
+
+        settingPane.add(fifthCheck, 0, 4);
+
+        warnOnRemove.setSelected(true);
+        
+        TextArea warnOnR = new TextArea("Display a warning window when trying to remove a creature with hitpoints remaining.");
+        warnOnR.setEditable(false);
+        warnOnR.setWrapText(true);
+
+        warnOnR.setMaxHeight(45);
+
+        settingPane.add(warnOnR, 1, 4);
+
 
         ColumnConstraints col1 = new ColumnConstraints();
         col1.setPercentWidth(30);
@@ -672,9 +723,33 @@ public void start(Stage primaryStage) {
 
         diceRolled.getChildren().clear();
 
+        HBox closeD = new HBox();
+
+        Tooltip closeDTt = new Tooltip("Close the dice panel");
+
+        Button closeDice = new Button("x");
+
+        closeDice.setTooltip(closeDTt);
+
+        closeDice.setOnAction(e -> {
+            diceRolled.setVisible(false);
+            closeDice.setVisible(false);
+            initList.getSelectionModel().setSelectionMode(null);
+        });
+
+        closeD.setAlignment(Pos.BOTTOM_RIGHT);
+
+        closeD.setPadding(new Insets(0, 0, 5, 0));
+
+        closeD.getChildren().addAll(closeDice);
+
+
+
+        diceRolled.getChildren().add(closeD);
+
         TextArea hpDice = new TextArea(); 
 
-        hpDice.setStyle("-fx-background-color: black");
+        hpDice.setStyle("-fx-background-color: #E69B27");
         hpDice.setWrapText(true);
 
         if(!match.find()){
@@ -725,7 +800,14 @@ public void start(Stage primaryStage) {
             }
             hpDice.appendText("\nTotal = " + result);
 
+            if(!displayDice.isSelected()){
+                diceRolled.getChildren().clear();
+            }
+
             return Integer.toString(result); 
+        }
+        if(!displayDice.isSelected()){
+            diceRolled.getChildren().clear();
         }
         return diceStr;
     }
@@ -809,7 +891,7 @@ public void start(Stage primaryStage) {
 // ------------------------------REMOVE CREATURE -----------------------
     public void removeCreature(VBox hpPanel, Button closeP, TextField modify, Alert alert){
         if(initList.getSelectionModel().getSelectedItem() != null){
-            if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0")){
+            if(!initList.getSelectionModel().getSelectedItem().getHp().equals("0") && warnOnRemove.isSelected()){
                 alert.setHeaderText(initList.getSelectionModel().getSelectedItem().getCName() + " has hit points remaining");
                 Optional<ButtonType> result = alert.showAndWait();
                 if (result.get() == ButtonType.CANCEL){        
@@ -862,3 +944,10 @@ public void start(Stage primaryStage) {
         }
     }
 }
+
+/* TO - DO
+ * 
+ * Make creatures erasable with the backspace key
+ * Allow for enter key when choosing a creature
+ * Create window with example stat block
+ */
